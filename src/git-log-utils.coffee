@@ -48,7 +48,7 @@ module.exports = class GitLogUtils
     else 
       directory = Path.dirname(fileName)
       
-    fileName = Path.normalize(@_escapeSpacesInPath(fileName))
+    fileName = Path.normalize(@_escapeForCli(fileName))
     
     cmd = "git log#{flags} #{fileName}"
     console.log '$ ' + cmd if process.env.DEBUG == '1'
@@ -96,6 +96,6 @@ module.exports = class GitLogUtils
     See nodejs Path.normalize().  This method extends Path.normalize() to add:
     - escape of space characters 
   ###
-  @_escapeSpacesInPath: (filePath) ->
-    spaceReplacement = if process.platform == 'win32' then '^ ' else '\\ '
-    return filePath.replace(/ /g, spaceReplacement)
+  @_escapeForCli: (filePath) ->
+    escapePrefix = if process.platform == 'win32' then '^' else '\\'
+    return filePath.replace(/([\s\(\)])/g, escapePrefix + '$1')
