@@ -30,6 +30,7 @@
     "bumble-docs": "^0.4.3",
     "bumble-strings": "^0.1.4",
     "bumble-test": "^0.1.4",
+    "fs-extra": "^0.28.0",
     "grunt": "^0.4.5",
     "grunt-available-tasks": "^0.6.1",
     "grunt-coffee-react": "^2.4.1",
@@ -43,6 +44,7 @@
     "grunt-shell": "^1.1.2",
     "grunt-sync": "^0.5.1",
     "grunt-webpack": "^1.0.11",
+    "jquery": "^2.2.3",
     "webpack": "^1.12.11",
     "webpack-dev-server": "^1.14.1"
   },
