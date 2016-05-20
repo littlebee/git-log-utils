@@ -50,7 +50,7 @@ module.exports = class GitLogUtils
       
     fileName = Path.normalize(@_escapeForCli(fileName))
     
-    cmd = "git log#{flags} #{fileName}"
+    cmd = "git log#{flags} \"#{fileName}\""
     console.log '$ ' + cmd if process.env.DEBUG == '1'
     return ChildProcess.execSync(cmd,  {stdio: 'pipe', cwd: directory}).toString()
     
@@ -98,4 +98,4 @@ module.exports = class GitLogUtils
   ###
   @_escapeForCli: (filePath) ->
     escapePrefix = if process.platform == 'win32' then '^' else '\\'
-    return filePath.replace(/([\s\(\)])/g, escapePrefix + '$1')
+    return filePath.replace(/([\(\)])/g, escapePrefix + '$1')
