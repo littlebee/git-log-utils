@@ -98,4 +98,4 @@ module.exports = class GitLogUtils
   ###
   @_escapeForCli: (filePath) ->
     escapePrefix = if process.platform == 'win32' then '^' else '\\'
-    return filePath.replace(/([\s\(\)])/g, escapePrefix + '$1')
+    return filePath.replace(/([\s\(\)\-])/g, escapePrefix + '$1')
