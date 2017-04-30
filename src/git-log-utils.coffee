@@ -6,7 +6,7 @@ Fs = require "fs"
 _ = require('underscore')
 
 
-module.exports = class GitLogUtils 
+module.exports = class GitLogUtils
 
 
   ###
@@ -25,35 +25,69 @@ module.exports = class GitLogUtils
       }, {
         ...
       }]
-  ###  
+  ###
+
   @getCommitHistory: (fileName)->
     logItems = []
     lastCommitObj = null
     rawLog = @_fetchFileHistory(fileName)
     return @_parseGitLogOutput(rawLog)
-    
-  
+
+  @isGit: (directory) ->
+    try
+      return ChildProcess.execSync('git rev-parse --is-inside-work-tree', {stdio: 'pipe', cwd: directory}) and true
+    catch error
+      return false
+      # if error.status is 128
+      #   return false
+      # else
+      #   throw error
+
+  @isHg: (directory) ->
+    try
+      return ChildProcess.execSync('hg root', {stdio: 'pipe', cwd: directory}) and true
+    catch error
+      # Not sure how to check if this is a 'not in HG' error
+      return false
+
   # Implementation
-  
-  
-  @_fetchFileHistory: (fileName) ->
+  @_fetchHgFileHistoryCmd: (fileName) ->
+    format = ("""\\{"id": "{node}", "authorName": "{author|person}", "relativeDate": "{date|age}", """ +
+      """ "authorDate": "{date(date, '%s')}", "message": "{desc|firstline}", """ +
+      """ "body": "{sub(r'^.*\\n?\\n?', '', desc)}", "hash": "{node|short}",""" +
+      """ "linesModified": "{diffstat}"\}\n""").replace(/\"/g, "#/dquotes/")
+
+    flags = "--template \"#{format}\""
+    return "hg log #{flags} #{fileName}"
+
+  @_fetchGitFileHistoryCmd: (fileName) ->
     format = ("""{"id": "%H", "authorName": "%an", "relativeDate": "%cr", "authorDate": %at, """ +
       """ "message": "%s", "body": "%b", "hash": "%h"}""").replace(/\"/g, "#/dquotes/")
     flags = " --pretty=\"format:#{format}\" --topo-order --date=local --numstat"
-    
+
+    return "git log#{flags} #{fileName}"
+
+  @_fetchFileHistory: (fileName) ->
     fstats = Fs.statSync fileName
-    if fstats.isDirectory() 
+    if fstats.isDirectory()
       directory = fileName
       fileName = ""
-    else 
+    else
       directory = Path.dirname(fileName)
-      
+
     fileName = Path.normalize(@_escapeForCli(fileName))
-    
-    cmd = "git log#{flags} #{fileName}"
+
+    cmd = null
+    if @isGit(directory)
+      cmd = @_fetchGitFileHistoryCmd(fileName)
+    else if @isHg(directory)
+      cmd = @_fetchHgFileHistoryCmd(fileName)
+    else
+      throw "Not a GIT or MERCURIAL directory #{directory}"
+
     console.log '$ ' + cmd if process.env.DEBUG == '1'
+
     return ChildProcess.execSync(cmd,  {stdio: 'pipe', cwd: directory}).toString()
-    
 
   @_parseGitLogOutput: (output) ->
     lastCommitObject = null
@@ -77,8 +111,14 @@ module.exports = class GitLogUtils
         lastCommitObj.linesAdded = (lastCommitObj.linesAdded || 0) + Number.parseInt(matches[1])
         lastCommitObj.linesDeleted = (lastCommitObj.linesDeleted || 0) + Number.parseInt(matches[2])
 
-    return logItems
+      if lastCommitObj and typeof lastCommitObj.linesModified is 'string'
+        [_modified, _added_deleted] = lastCommitObj.linesModified.split(':')
+        [_added, _deleted] = _added_deleted.split('/')
+        lastCommitObj.linesAdded = Number.parseInt(_added)
+        lastCommitObj.linesDeleted = Number.parseInt(_deleted) * -1
+        delete lastCommitObj.linesModified
 
+    return logItems
 
   @_parseCommitObj: (line) ->
     encLine = line.replace(/\t/g, '  ') # tabs mess with JSON parse
@@ -91,10 +131,10 @@ module.exports = class GitLogUtils
     catch
       console.warn "failed to parse JSON #{encLine}"
       return null
-      
+
   ###
     See nodejs Path.normalize().  This method extends Path.normalize() to add:
-    - escape of space characters 
+    - escape of space characters
   ###
   @_escapeForCli: (filePath) ->
     escapePrefix = if process.platform == 'win32' then '^' else '\\'
