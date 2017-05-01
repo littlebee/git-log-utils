@@ -1,6 +1,6 @@
 
 # git-log-utils
-Utility methods for parsing `git log` output
+Utility methods for parsing `git log` and `hg log` output
 
 ## Installation
 ```
