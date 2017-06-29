@@ -12,7 +12,7 @@ Utility methods for parsing `git log` output
 
 GitLogUtils = require('git-log-utils')
 
-GitLogUtils.getFileCommitHistory(fileName)
+GitLogUtils.getCommitHistory(fileName)
 ```
 Returns an array of javascript objects representing the commits that effected the requested file
 with line stats, that looks like this:
