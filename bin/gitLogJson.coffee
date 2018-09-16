@@ -13,4 +13,4 @@ if !path? || path == "--help"
   """
   process.exit(1)
   
-console.log GitLogUtils.getCommitHistory(path)
+console.log JSON.stringify(GitLogUtils.getCommitHistory(path), null, 2)

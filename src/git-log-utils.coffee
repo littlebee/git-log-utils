@@ -44,14 +44,13 @@ module.exports = class GitLogUtils
     fstats = Fs.statSync fileName
     if fstats.isDirectory() 
       directory = fileName
-      fileName = ""
+      fileName = "."
     else 
       directory = Path.dirname(fileName)
+      fileName = Path.basename(fileName)
       
-    fileName = Path.normalize(@_escapeForCli(fileName))
-    
     cmd = "git log#{flags} #{fileName}"
-    console.log '$ ' + cmd if process.env.DEBUG == '1'
+    console.warn '$ ' + cmd if process.env.DEBUG == '1'
     return ChildProcess.execSync(cmd,  {stdio: 'pipe', cwd: directory}).toString()
     
 
@@ -59,36 +58,59 @@ module.exports = class GitLogUtils
     lastCommitObject = null
     logItems = []
     logLines = output.split("\n")
-    for line in logLines
-      if line[0] == '{' && line[line.length-1] == '}'
-        lastCommitObj = @_parseCommitObj(line)
-        logItems.push lastCommitObj if lastCommitObj
-      else if line[0] == '{'
-        # this will happen when there are newlines in the commit message
-        lastCommitObj = line
-      else if _.isString(lastCommitObj)
-        lastCommitObj += line
-        if line[line.length-1] == '}'
-          lastCommitObj = @_parseCommitObj(lastCommitObj)
-          logItems.push lastCommitObj if lastCommitObj
-      else if lastCommitObj? && (matches = line.match(/^(\d+)\s*(\d+).*/))
-        # console.log "lastCommitObj", lastCommitObj
-        # git log --num-stat appends line stats on separate lines
-        lastCommitObj.linesAdded = (lastCommitObj.linesAdded || 0) + Number.parseInt(matches[1])
-        lastCommitObj.linesDeleted = (lastCommitObj.linesDeleted || 0) + Number.parseInt(matches[2])
+    currentCommitText = null
+    totalLinesAdded = 0
+    totalLinesDeleted = 0
+    files = []
 
+    addLogItem = =>
+      commitObj = @_parseCommitObj(currentCommitText)
+      commitObj.linesAdded = totalLinesAdded
+      commitObj.linesDeleted = totalLinesDeleted
+      commitObj.files = files
+      logItems.push commitObj
+      
+      totalLinesAdded = 0
+      totalLinesDeleted = 0
+      files = []
+
+    for line in logLines
+      if line.match /^\{\#\/dquotes\/id\#\/dquotes\/\:/  
+        if currentCommitText?
+          addLogItem()
+        currentCommitText = line
+      else if (matches = line.match(/^([\d\-]+)\s*([\d\-]+)(.*)/))
+        [linesAdded, linesDeleted, fileName] = matches[1..]
+        linesAdded = parseInt(linesAdded)
+        linesDeleted = parseInt(linesDeleted)
+        totalLinesAdded += linesAdded
+        totalLinesDeleted += linesDeleted
+        files.push {
+          name: fileName.trim()
+          linesAdded: linesAdded
+          linesDeleted: linesDeleted
+        }
+      else if line?
+        currentCommitText += line
+    
+    if currentCommitText
+      addLogItem()
+    
     return logItems
 
 
   @_parseCommitObj: (line) ->
+
     encLine = line.replace(/\t/g, '  ') # tabs mess with JSON parse
     .replace(/\"/g, "'")           # sorry, can't parse with quotes in body or message
     .replace(/(\n|\n\r)/g, '<br>')
     .replace(/\r/g, '<br>')
     .replace(/\#\/dquotes\//g, '"')
+    .replace(/\\/g, '\\\\')
     try
       return JSON.parse(encLine)
     catch
+      console.warn line + "\n\n"
       console.warn "failed to parse JSON #{encLine}"
       return null
       
