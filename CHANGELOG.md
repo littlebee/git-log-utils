@@ -1,3 +1,12 @@
+## [0.3.0](https://github.com/littlebee/git-log-utils.git/compare/v0.2.2...v0.3.0) - (2018-09-16)
+**Now returns files effected for each commit!**  
+
+For single file queries, getCommitHistory will always return s single file in the `files` attribute that being the file requested.   For directory queries, `files` will contain only the files in the directory which were involved in the commit.  
+### Other Commits
+* [d3112c5](https://github.com/littlebee/git-log-utils.git/commit/d3112c5841e87bb150ecf6ed795c87bda300de9c) improve parsing of git log output; add files effected to commit objects returned
+* [ffbeb0e](https://github.com/littlebee/git-log-utils.git/commit/ffbeb0ec561b73273aec8339fb6472868b667010) add - to escaped characters
+* [003d9f3](https://github.com/littlebee/git-log-utils.git/commit/003d9f3be50c9d29f376d6f4d4ceb8c831093a92) adds missing development deps
+
 ## [0.2.2](https://github.com/littlebee/git-log-utils.git/compare/0.2.1...0.2.2) (2016-04-93)
 
 
