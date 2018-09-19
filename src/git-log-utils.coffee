@@ -79,7 +79,7 @@ module.exports = class GitLogUtils
         if currentCommitText?
           addLogItem()
         currentCommitText = line
-      else if (matches = line.match(/^([\d\-]+)\s*([\d\-]+)(.*)/))
+      else if (matches = line.match(/^([\d\-]+)\s+([\d\-]+)\s+(.*)/))
         [linesAdded, linesDeleted, fileName] = matches[1..]
         linesAdded = parseInt(linesAdded)
         linesDeleted = parseInt(linesDeleted)
@@ -103,10 +103,11 @@ module.exports = class GitLogUtils
 
     encLine = line.replace(/\t/g, '  ') # tabs mess with JSON parse
     .replace(/\"/g, "'")           # sorry, can't parse with quotes in body or message
-    .replace(/(\n|\n\r)/g, '<br>')
-    .replace(/\r/g, '<br>')
+    .replace(/(\n|\n\r)/g, ' <br>')
+    .replace(/\r/g, ' <br>')
     .replace(/\#\/dquotes\//g, '"')
     .replace(/\\/g, '\\\\')
+    .replace(/[\x00-\x1F\x7F-\x9F]/g, ' ')
     try
       return JSON.parse(encLine)
     catch
