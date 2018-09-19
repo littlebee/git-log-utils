@@ -39,7 +39,7 @@ module.exports = class GitLogUtils
   @_fetchFileHistory: (fileName) ->
     format = ("""{"id": "%H", "authorName": "%an", "relativeDate": "%cr", "authorDate": %at, """ +
       """ "message": "%s", "body": "%b", "hash": "%h"}""").replace(/\"/g, "#/dquotes/")
-    flags = " --pretty=\"format:#{format}\" --topo-order --date=local --numstat"
+    flags = " --pretty=\"format:#{format}\" --topo-order --date=local --numstat --follow"
     
     fstats = Fs.statSync fileName
     if fstats.isDirectory() 
