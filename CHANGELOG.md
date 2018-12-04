@@ -1,3 +1,11 @@
+## [0.4.0](https://github.com/littlebee/git-log-utils.git/compare/v0.3.0...v0.4.0) - (2018-12-03)
+
+### Other Commits
+* [9c9249e](https://github.com/littlebee/git-log-utils.git/commit/9c9249e739fb97005452db86ad1d6866b510ada1) Merge branch 'testBranch' of https://github.com/littlebee/git-log-utils
+* [df64df4](https://github.com/littlebee/git-log-utils.git/commit/df64df47f72688cacbe6c2729e12c6ad95998773) this commit will be merged into master after I've made later changes.  seeing the effect this has on --since
+* [f1d6855](https://github.com/littlebee/git-log-utils.git/commit/f1d68559da70cf3a5983337a36b7d9e0b03da59e) add --follow flag to track accross renames
+* [a811f9d](https://github.com/littlebee/git-log-utils.git/commit/a811f9d3412cc82d061f6a7db106be01bbb2fdca) improve parsing - handle unicode control chars, better line break handling
+
 ## [0.3.0](https://github.com/littlebee/git-log-utils.git/compare/v0.2.2...v0.3.0) - (2018-09-16)
 **Now returns files effected for each commit!**  
 
